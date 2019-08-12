@@ -49,6 +49,16 @@
                 }
             },
             "version": "6efd4e5e12213021516c10b3ebd0699260ddd804"
+        },
+        {
+            "name": "conprof",
+            "source": {
+                "git": {
+                    "remote": "https://github.com/conprof/conprof",
+                    "subdir": "deployments/jsonnet/conprof/"
+                }
+            },
+            "version": "9ec7c1798b00f25f718e4301a1584a1d87c70a33"
         }
     ]
 }

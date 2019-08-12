@@ -29,6 +29,16 @@
                 }
             },
             "version": "master"
+        },
+        {
+            "name": "conprof",
+            "source": {
+                "git": {
+                    "remote": "https://github.com/conprof/conprof",
+                    "subdir": "deployments/jsonnet/conprof/"
+                }
+            },
+            "version": "master"
         }
     ]
 }

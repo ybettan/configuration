@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+items:
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: conprof-main
+    namespace: observatorium
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: conprof-main
+  subjects:
+  - kind: ServiceAccount
+    name: conprof-main
+    namespace: observatorium
+kind: RoleBindingList

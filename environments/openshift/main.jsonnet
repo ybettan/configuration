@@ -5,6 +5,7 @@ local list = import 'telemeter/lib/list.libsonnet';
 
 local app =
   (import 'kube-thanos.libsonnet') +
+  (import 'conprof.libsonnet') +
   (import 'telemeter.libsonnet') +
   {
     local thanos = super.thanos,
@@ -13,6 +14,7 @@ local app =
       list.asList('observatorium', {}, []) + {
         objects:
           $.thanos.template.objects +
+          $.conprof.template.objects +
           $.telemeterServer.list.objects,
 
         parameters:

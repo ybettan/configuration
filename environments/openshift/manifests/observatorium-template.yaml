@@ -384,6 +384,111 @@ objects:
           name: data
 - apiVersion: v1
   data:
+    conprof.yaml: InNjcmFwZV9jb25maWdzIjoKLSAiam9iX25hbWUiOiAiY29ucHJvZiIKICAia3ViZXJuZXRlc19zZF9jb25maWdzIjoKICAtICJuYW1lc3BhY2VzIjoKICAgICAgIm5hbWVzIjoKICAgICAgLSAiJHtOQU1FU1BBQ0V9IgogICAgInJvbGUiOiAicG9kIgogICJyZWxhYmVsX2NvbmZpZ3MiOgogIC0gImFjdGlvbiI6ICJrZWVwIgogICAgInJlZ2V4IjogImNvbnByb2YuKiIKICAgICJzb3VyY2VfbGFiZWxzIjoKICAgIC0gIl9fbWV0YV9rdWJlcm5ldGVzX3BvZF9uYW1lIgogICJzY3JhcGVfaW50ZXJ2YWwiOiAiMW0iCiAgInNjcmFwZV90aW1lb3V0IjogIjFtIg==
+  kind: Secret
+  metadata:
+    name: conprof-config
+    namespace: ${NAMESPACE}
+  type: Opaque
+- apiVersion: rbac.authorization.k8s.io/v1
+  items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: conprof-main
+      namespace: ${NAMESPACE}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: conprof-main
+    subjects:
+    - kind: ServiceAccount
+      name: conprof-main
+      namespace: ${NAMESPACE}
+  kind: RoleBindingList
+- apiVersion: rbac.authorization.k8s.io/v1
+  items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: conprof-main
+      namespace: ${NAMESPACE}
+    rules:
+    - apiGroups:
+      - ""
+      resources:
+      - services
+      - endpoints
+      - pods
+      verbs:
+      - get
+      - list
+      - watch
+  kind: RoleList
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: conprof
+    name: conprof-main-governing-service
+    namespace: ${NAMESPACE}
+  spec:
+    clusterIP: None
+    ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    selector:
+      app: conprof
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: conprof-main
+    namespace: ${NAMESPACE}
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    labels:
+      app: conprof
+    name: conprof-main
+    namespace: ${NAMESPACE}
+  spec:
+    selector:
+      matchLabels:
+        app: conprof
+    serviceName: conprof-main-governing-service
+    template:
+      metadata:
+        labels:
+          app: conprof
+      spec:
+        containers:
+        - args:
+          - all
+          - --storage.tsdb.path=/conprof
+          - --config.file=/etc/conprof/conprof.yaml
+          image: quay.io/conprof/conprof:v0.1.0-dev
+          name: conprof
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+          - mountPath: /conprof
+            name: storage
+            readOnly: false
+          - mountPath: /etc/conprof
+            name: config
+            readOnly: false
+        nodeSelector:
+          kubernetes.io/os: linux
+        serviceAccountName: conprof-main
+        volumes:
+        - emptyDir: {}
+          name: storage
+        - name: config
+          secret:
+            secretName: conprof-config
+- apiVersion: v1
+  data:
     rhd.client_id: ""
     rhd.password: ""
     rhd.url: ""
