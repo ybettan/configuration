@@ -33,26 +33,43 @@ spec:
       containers:
       - args:
         - --web.listen=0.0.0.0:8080
+        - --tls-cert-file=/mnt/certs/server.pem
+        - --tls-client-ca-file=/mnt/certs/ca.pem
+        - --tls-private-key-file=/mnt/certs/server.key
         - --metrics.ui.endpoint=http://observatorium-xyz-observatorium-api-gateway-thanos-query.observatorium.svc.cluster.local:9090
         - --metrics.read.endpoint=http://observatorium-xyz-cortex-query-frontend.observatorium.svc.cluster.local:9090/api/v1
         - --metrics.write.endpoint=http://observatorium-xyz-thanos-receive.observatorium.svc.cluster.local:19291/api/v1/receive
-        - --log.level=warn
+        - --log.level=debug
         image: quay.io/observatorium/observatorium:master-2020-04-16-v0.1.0-2-g2a4aa00
+        volumeMounts:
+          - name: tls-certs
+            mountPath: "/mnt/certs"
+            readOnly: true
+        #livenessProbe:
+        #  failureThreshold: 8
+        #  httpGet:
+        #    path: /-/healthy
+        #    port: 8080
+        #    scheme: HTTPS
+        #  periodSeconds: 30
         livenessProbe:
-          failureThreshold: 8
-          httpGet:
-            path: /-/healthy
+          tcpSocket:
             port: 8080
-            scheme: HTTP
-          periodSeconds: 30
         name: observatorium-api-gateway
         ports:
         - containerPort: 8080
           name: http
         readinessProbe:
-          failureThreshold: 20
-          httpGet:
-            path: /-/ready
+          tcpSocket:
             port: 8080
-            scheme: HTTP
-          periodSeconds: 5
+        #readinessProbe:
+        #  failureThreshold: 20
+        #  httpGet:
+        #    path: /-/ready
+        #    port: 8080
+        #    scheme: HTTPS
+        #  periodSeconds: 5
+      volumes:
+        - name: "tls-certs"
+          secret:
+            secretName: tls-certs
